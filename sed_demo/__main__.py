@@ -77,6 +77,7 @@ class DemoApp(DemoFrontend):
         top_k=5,
         title_fontsize=22,
         table_fontsize=18,
+        from_file=False,
     ):
         """
         :param top_banner_path: Path to the image showed at the top
@@ -115,7 +116,7 @@ class DemoApp(DemoFrontend):
         )
         # 1. Input stream from microphone
         self.audiostream = AsynchAudioInputStream(
-            samplerate, audio_chunk_length, ringbuffer_length
+            samplerate, audio_chunk_length, ringbuffer_length, from_file
         )
         # 2. DL pretrained model to predict tags from ring buffer
         num_audioset_classes = len(all_labels)
@@ -226,9 +227,10 @@ class ConfDef:
     MEL_FMIN: int = 50
     MEL_FMAX: int = 14000
     # frontend
-    TOP_K: int = 6
+    TOP_K: int = 5
     TITLE_FONTSIZE: int = 28
     TABLE_FONTSIZE: int = 22
+    from_file: bool = True
 
 
 # ##############################################################################
@@ -266,6 +268,7 @@ if __name__ == "__main__":
         CONF.TOP_K,
         CONF.TITLE_FONTSIZE,
         CONF.TABLE_FONTSIZE,
+        CONF.from_file
     )
 
     demo.mainloop()

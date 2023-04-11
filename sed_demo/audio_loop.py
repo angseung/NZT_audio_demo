@@ -6,7 +6,7 @@
 This module contains functionality to handle the real-time input audio process.
 """
 
-
+import wave
 import numpy as np
 import pyaudio
 
@@ -66,24 +66,41 @@ class AsynchAudioInputStream:
     NP_DTYPE = np.float32
 
     def __init__(
-        self, samplerate=32000, chunk_length=1024, ringbuffer_length=62 * 1024
+        self, samplerate=32000, chunk_length=1024, ringbuffer_length=62 * 1024, from_file=False,
     ):
         """ """
         self.sr = samplerate
         self.chunk = chunk_length
         self.rb_length = ringbuffer_length
+        self.wav_path = "sample.wav"
         # setup recording stream
         self.pa = pyaudio.PyAudio()
-        self.stream = self.pa.open(
-            format=self.PYAUDIO_DTYPE,
-            channels=self.IN_CHANNELS,
-            rate=samplerate,
-            input=True,  # record
-            output=False,  # playback
-            frames_per_buffer=chunk_length,
-            stream_callback=self.callback,
-            start=False,
-        )
+
+        if from_file:
+            self.wf = wave.open(self.wav_path, "rb")
+            self.stream = self.pa.open(
+                # format=self.pa.get_format_from_width(self.wf.getsampwidth()),
+                format=self.PYAUDIO_DTYPE,
+                channels=self.IN_CHANNELS,
+                rate=self.wf.getframerate(),
+                input=True,  # record
+                output=False,  # playback
+                frames_per_buffer=chunk_length,
+                stream_callback=self.callback,
+                start=False,
+            )
+        else:
+            self.stream = self.pa.open(
+                format=self.PYAUDIO_DTYPE,
+                channels=self.IN_CHANNELS,
+                rate=samplerate,
+                input=True,  # record
+                output=False,  # playback
+                frames_per_buffer=chunk_length,
+                stream_callback=self.callback,
+                start=False,
+            )
+
         # setup audio buffer
         self.rb = RingBuffer(ringbuffer_length, self.NP_DTYPE)
 
