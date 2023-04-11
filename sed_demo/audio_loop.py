@@ -66,13 +66,13 @@ class AsynchAudioInputStream:
     NP_DTYPE = np.float32
 
     def __init__(
-        self, samplerate=32000, chunk_length=1024, ringbuffer_length=62 * 1024, from_file=False,
+        self, samplerate=32000, chunk_length=1024, ringbuffer_length=62 * 1024, from_file=False, file_name="sample.wav",
     ):
         """ """
         self.sr = samplerate
         self.chunk = chunk_length
         self.rb_length = ringbuffer_length
-        self.wav_path = "sample.wav"
+        self.wav_path = file_name
         # setup recording stream
         self.pa = pyaudio.PyAudio()
 

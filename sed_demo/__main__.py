@@ -78,6 +78,7 @@ class DemoApp(DemoFrontend):
         title_fontsize=22,
         table_fontsize=18,
         from_file=False,
+        file_name=None,
     ):
         """
         :param top_banner_path: Path to the image showed at the top
@@ -116,7 +117,7 @@ class DemoApp(DemoFrontend):
         )
         # 1. Input stream from microphone
         self.audiostream = AsynchAudioInputStream(
-            samplerate, audio_chunk_length, ringbuffer_length, from_file
+            samplerate, audio_chunk_length, ringbuffer_length, from_file, file_name,
         )
         # 2. DL pretrained model to predict tags from ring buffer
         num_audioset_classes = len(all_labels)
@@ -231,6 +232,7 @@ class ConfDef:
     TITLE_FONTSIZE: int = 28
     TABLE_FONTSIZE: int = 22
     from_file: bool = True
+    file_name: str = "news.wav"
 
 
 # ##############################################################################
@@ -268,7 +270,8 @@ if __name__ == "__main__":
         CONF.TOP_K,
         CONF.TITLE_FONTSIZE,
         CONF.TABLE_FONTSIZE,
-        CONF.from_file
+        CONF.from_file,
+        CONF.file_name,
     )
 
     demo.mainloop()
