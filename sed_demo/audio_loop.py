@@ -100,6 +100,7 @@ class AsynchAudioInputStream:
                 output=False,  # playback
                 frames_per_buffer=chunk_length,
                 stream_callback=self.callback,
+                input_device_index=2,
                 start=False,
             )
 

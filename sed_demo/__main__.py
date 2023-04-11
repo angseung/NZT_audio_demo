@@ -74,7 +74,7 @@ class DemoApp(DemoFrontend):
         n_mels=64,
         mel_fmin=50,
         mel_fmax=14000,
-        top_k=5,
+        top_k=6,
         title_fontsize=22,
         table_fontsize=18,
         from_file=False,
@@ -231,10 +231,10 @@ class ConfDef:
     TOP_K: int = 5
     TITLE_FONTSIZE: int = 28
     TABLE_FONTSIZE: int = 22
-    from_file: bool = True
-    # from_file: bool = False
-    file_name: str = "news.wav"
-    # file_name: str = "sample.wav"
+    # from_file: bool = True
+    from_file: bool = False
+    # file_name: str = "news.wav"
+    file_name: str = "sample.wav"
 
 
 # ##############################################################################
