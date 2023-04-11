@@ -73,17 +73,19 @@ class AsynchAudioInputStream:
         self.chunk = chunk_length
         self.rb_length = ringbuffer_length
         self.wav_path = file_name
+        self.from_file = from_file
         # setup recording stream
         self.pa = pyaudio.PyAudio()
 
         if from_file:
             self.wf = wave.open(self.wav_path, "rb")
             self.stream = self.pa.open(
-                # format=self.pa.get_format_from_width(self.wf.getsampwidth()),
-                format=self.PYAUDIO_DTYPE,
-                channels=self.IN_CHANNELS,
+                format=self.pa.get_format_from_width(self.wf.getsampwidth()),
+                channels=self.wf.getnchannels(),
                 rate=self.wf.getframerate(),
+                # input=False,  # record
                 input=True,  # record
+                # output=True,  # playback
                 output=False,  # playback
                 frames_per_buffer=chunk_length,
                 stream_callback=self.callback,
@@ -149,6 +151,12 @@ class AsynchAudioInputStream:
         :param time_info: unused
         :param status: unused
         """
-        in_arr = np.frombuffer(in_data, dtype=np.float32)
+        if self.from_file:
+            in_arr = self.wf.readframes(self.chunk)
+            in_arr = np.frombuffer(in_arr, dtype=np.float32)
+            # print("frame read")
+        else:
+            in_arr = np.frombuffer(in_data, dtype=np.float32)
+
         self.rb.update(in_arr)
         return (in_arr, pyaudio.paContinue)

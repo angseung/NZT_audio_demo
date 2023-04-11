@@ -232,9 +232,12 @@ class ConfDef:
     TITLE_FONTSIZE: int = 28
     TABLE_FONTSIZE: int = 22
     from_file: bool = True
+    # from_file: bool = False
     file_name: str = "news.wav"
+    # file_name: str = "sample.wav"
 
 
+# ##############################################################################
 # ##############################################################################
 # # MAIN ROUTINE
 # ##############################################################################
