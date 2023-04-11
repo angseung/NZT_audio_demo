@@ -16,12 +16,19 @@ from threading import Thread
 import os
 from dataclasses import dataclass
 from typing import Optional
+
 #
 import torch
 from omegaconf import OmegaConf
+
 #
-from sed_demo import AI4S_BANNER_PATH, SURREY_LOGO_PATH, CVSSP_LOGO_PATH, \
-    EPSRC_LOGO_PATH, AUDIOSET_LABELS_PATH
+from sed_demo import (
+    AI4S_BANNER_PATH,
+    SURREY_LOGO_PATH,
+    CVSSP_LOGO_PATH,
+    EPSRC_LOGO_PATH,
+    AUDIOSET_LABELS_PATH,
+)
 from sed_demo.utils import load_csv_labels
 from sed_demo.models import Cnn9_GMP_64x64
 from sed_demo.audio_loop import AsynchAudioInputStream
@@ -52,13 +59,25 @@ class DemoApp(DemoFrontend):
     BAR_COLOR = "#ffcc99"
 
     def __init__(
-            self,
-            top_banner_path, logo_paths, model_path,
-            all_labels, tracked_labels=None,
-            samplerate=32000, audio_chunk_length=1024, ringbuffer_length=40000,
-            model_winsize=1024, stft_hopsize=512, stft_window="hann",
-            n_mels=64, mel_fmin=50, mel_fmax=14000,
-            top_k=5, title_fontsize=22, table_fontsize=18):
+        self,
+        top_banner_path,
+        logo_paths,
+        model_path,
+        all_labels,
+        tracked_labels=None,
+        samplerate=32000,
+        audio_chunk_length=1024,
+        ringbuffer_length=40000,
+        model_winsize=1024,
+        stft_hopsize=512,
+        stft_window="hann",
+        n_mels=64,
+        mel_fmin=50,
+        mel_fmax=14000,
+        top_k=5,
+        title_fontsize=22,
+        table_fontsize=18,
+    ):
         """
         :param top_banner_path: Path to the image showed at the top
         :param logo_paths: list of paths with images showed at the bottom
@@ -87,22 +106,33 @@ class DemoApp(DemoFrontend):
         :param top_k: For each prediction, the app will show only the ``top_k``
           categories with highest confidence, in descending order.
         """
-        super().__init__(top_k, top_banner_path, logo_paths,
-                         title_fontsize=title_fontsize,
-                         table_fontsize=table_fontsize)
+        super().__init__(
+            top_k,
+            top_banner_path,
+            logo_paths,
+            title_fontsize=title_fontsize,
+            table_fontsize=table_fontsize,
+        )
         # 1. Input stream from microphone
         self.audiostream = AsynchAudioInputStream(
-            samplerate, audio_chunk_length, ringbuffer_length)
+            samplerate, audio_chunk_length, ringbuffer_length
+        )
         # 2. DL pretrained model to predict tags from ring buffer
         num_audioset_classes = len(all_labels)
         self.model = Cnn9_GMP_64x64(num_audioset_classes)
-        checkpoint = torch.load(model_path,
-                                map_location=lambda storage, loc: storage)
+        checkpoint = torch.load(model_path, map_location=lambda storage, loc: storage)
         self.model.load_state_dict(checkpoint["model"])
         # 3. Inference: periodically read the input stream with the model
         self.inference = AudioModelInference(
-            self.model, model_winsize, stft_hopsize, samplerate, stft_window,
-            n_mels, mel_fmin, mel_fmax)
+            self.model,
+            model_winsize,
+            stft_hopsize,
+            samplerate,
+            stft_window,
+            n_mels,
+            mel_fmin,
+            mel_fmax,
+        )
         # 4. Tracker: process predictions, return the top K among allowed ones
         self.tracker = PredictionTracker(all_labels, allow_list=tracked_labels)
         #
@@ -122,7 +152,8 @@ class DemoApp(DemoFrontend):
             dl_inference = self.inference(self.audiostream.read())
             top_preds = self.tracker(dl_inference, self.top_k)
             for label, bar, (clsname, pval) in zip(
-                    self.sound_labels, self.confidence_bars, top_preds):
+                self.sound_labels, self.confidence_bars, top_preds
+            ):
                 label["text"] = clsname
                 bar["value"] = pval
 
@@ -147,8 +178,7 @@ class DemoApp(DemoFrontend):
         self.audiostream.stop()
 
     def exit_demo(self):
-        """
-        """
+        """ """
         # if DL inference is running, give order to pause
         if self.is_running():
             print("Waiting for threads to finish...")
@@ -178,10 +208,12 @@ class ConfDef:
     Check ``DemoApp`` docstring for details on the parameters. Defaults should
     work reasonably well out of the box.
     """
+
     ALL_LABELS_PATH: str = AUDIOSET_LABELS_PATH
     SUBSET_LABELS_PATH: Optional[str] = None
     MODEL_PATH: str = os.path.join(
-        "models", "Cnn9_GMP_64x64_300000_iterations_mAP=0.37.pth")
+        "models", "Cnn9_GMP_64x64_300000_iterations_mAP=0.37.pth"
+    )
     #
     SAMPLERATE: int = 32000
     AUDIO_CHUNK_LENGTH: int = 1024
@@ -202,8 +234,7 @@ class ConfDef:
 # ##############################################################################
 # # MAIN ROUTINE
 # ##############################################################################
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     CONF = OmegaConf.structured(ConfDef())
     cli_conf = OmegaConf.from_cli()
     CONF = OmegaConf.merge(CONF, cli_conf)
@@ -218,11 +249,23 @@ if __name__ == '__main__':
     logo_paths = [SURREY_LOGO_PATH, CVSSP_LOGO_PATH, EPSRC_LOGO_PATH]
 
     demo = DemoApp(
-        AI4S_BANNER_PATH, logo_paths, CONF.MODEL_PATH,
-        all_labels, subset_labels,
-        CONF.SAMPLERATE, CONF.AUDIO_CHUNK_LENGTH, CONF.RINGBUFFER_LENGTH,
-        CONF.MODEL_WINSIZE, CONF.STFT_HOPSIZE, CONF.STFT_WINDOW,
-        CONF.N_MELS, CONF.MEL_FMIN, CONF.MEL_FMAX,
-        CONF.TOP_K, CONF.TITLE_FONTSIZE, CONF.TABLE_FONTSIZE)
+        AI4S_BANNER_PATH,
+        logo_paths,
+        CONF.MODEL_PATH,
+        all_labels,
+        subset_labels,
+        CONF.SAMPLERATE,
+        CONF.AUDIO_CHUNK_LENGTH,
+        CONF.RINGBUFFER_LENGTH,
+        CONF.MODEL_WINSIZE,
+        CONF.STFT_HOPSIZE,
+        CONF.STFT_WINDOW,
+        CONF.N_MELS,
+        CONF.MEL_FMIN,
+        CONF.MEL_FMAX,
+        CONF.TOP_K,
+        CONF.TITLE_FONTSIZE,
+        CONF.TABLE_FONTSIZE,
+    )
 
     demo.mainloop()

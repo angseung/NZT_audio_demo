@@ -26,5 +26,4 @@ SURREY_LOGO_PATH = os.path.join(ROOT_PATH[0], "assets", "surrey_logo.png")
 CVSSP_LOGO_PATH = os.path.join(ROOT_PATH[0], "assets", "CVSSP_logo.png")
 EPSRC_LOGO_PATH = os.path.join(ROOT_PATH[0], "assets", "EPSRC_logo.png")
 #
-AUDIOSET_LABELS_PATH = os.path.join(
-    ROOT_PATH[0], "assets", "audioset_labels.csv")
+AUDIOSET_LABELS_PATH = os.path.join(ROOT_PATH[0], "assets", "audioset_labels.csv")

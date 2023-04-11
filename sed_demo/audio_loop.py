@@ -14,12 +14,13 @@ import pyaudio
 # ##############################################################################
 # # RING BUFFER
 # ##############################################################################
-class RingBuffer():
+class RingBuffer:
     """
     A 1D ring buffer using numpy arrays, designed to efficiently handle
     real-time audio buffering. Modified from
     https://scimusing.wordpress.com/2013/10/25/ring-buffers-in-pythonnumpy/
     """
+
     def __init__(self, length, dtype=np.float32):
         """
         :param int length: Number of samples in this buffer
@@ -64,23 +65,25 @@ class AsynchAudioInputStream:
     PYAUDIO_DTYPE = pyaudio.paFloat32
     NP_DTYPE = np.float32
 
-    def __init__(self, samplerate=32000, chunk_length=1024,
-                 ringbuffer_length=62*1024):
-        """
-        """
+    def __init__(
+        self, samplerate=32000, chunk_length=1024, ringbuffer_length=62 * 1024
+    ):
+        """ """
         self.sr = samplerate
         self.chunk = chunk_length
         self.rb_length = ringbuffer_length
         # setup recording stream
         self.pa = pyaudio.PyAudio()
-        self.stream = self.pa.open(format=self.PYAUDIO_DTYPE,
-                                   channels=self.IN_CHANNELS,
-                                   rate=samplerate,
-                                   input=True,  # record
-                                   output=False,  # playback
-                                   frames_per_buffer=chunk_length,
-                                   stream_callback=self.callback,
-                                   start=False)
+        self.stream = self.pa.open(
+            format=self.PYAUDIO_DTYPE,
+            channels=self.IN_CHANNELS,
+            rate=samplerate,
+            input=True,  # record
+            output=False,  # playback
+            frames_per_buffer=chunk_length,
+            stream_callback=self.callback,
+            start=False,
+        )
         # setup audio buffer
         self.rb = RingBuffer(ringbuffer_length, self.NP_DTYPE)
 
@@ -112,13 +115,11 @@ class AsynchAudioInputStream:
         self.pa.terminate()
 
     def __enter__(self):
-        """
-        """
+        """ """
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """
-        """
+        """ """
         self.terminate()
 
     def callback(self, in_data, frame_count, time_info, status):

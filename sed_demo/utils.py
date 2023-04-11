@@ -36,11 +36,10 @@ def load_csv_labels(labels_csv_path):
 # # PYTORCH
 # ##############################################################################
 def move_data_to_device(x, device):
-    """
-    """
-    if 'float' in str(x.dtype):
+    """ """
+    if "float" in str(x.dtype):
         x = torch.Tensor(x)
-    elif 'int' in str(x.dtype):
+    elif "int" in str(x.dtype):
         x = torch.LongTensor(x)
     else:
         return x
@@ -71,7 +70,8 @@ def pad_framewise_output(framewise_output, frames_num):
       output: (batch_size, frames_num, classes_num)
     """
     pad = framewise_output[:, -1:, :].repeat(
-        1, frames_num - framewise_output.shape[1], 1)
+        1, frames_num - framewise_output.shape[1], 1
+    )
     """tensor for padding"""
 
     output = torch.cat((framewise_output, pad), dim=1)
@@ -81,8 +81,9 @@ def pad_framewise_output(framewise_output, frames_num):
 
 
 def do_mixup(x, mixup_lambda):
-    """
-    """
-    out = x[0::2].transpose(0, -1) * mixup_lambda[0::2] + \
-        x[1::2].transpose(0, -1) * mixup_lambda[1::2]
+    """ """
+    out = (
+        x[0::2].transpose(0, -1) * mixup_lambda[0::2]
+        + x[1::2].transpose(0, -1) * mixup_lambda[1::2]
+    )
     return out.transpose(0, -1)
