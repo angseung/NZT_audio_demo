@@ -67,7 +67,12 @@ class AsynchAudioInputStream:
     NP_DTYPE = np.float32
 
     def __init__(
-        self, samplerate=32000, chunk_length=1024, ringbuffer_length=62 * 1024, from_file=False, file_name="sample.wav",
+        self,
+        samplerate=32000,
+        chunk_length=1024,
+        ringbuffer_length=62 * 1024,
+        from_file=False,
+        file_name="sample.wav",
     ):
         """ """
         self.sr = samplerate
@@ -80,7 +85,9 @@ class AsynchAudioInputStream:
 
         if from_file:
             self.wf = wave.open(self.wav_path, "rb")
-            self.wave, _ = librosa.load(self.wav_path, sr=self.wf.getframerate(), mono=True, dtype=np.float32)
+            self.wave, _ = librosa.load(
+                self.wav_path, sr=self.wf.getframerate(), mono=True, dtype=np.float32
+            )
             self.max_count = self.wave.shape[0] // chunk_length
             self.count = 0
             self.stream = self.pa.open(
@@ -158,22 +165,14 @@ class AsynchAudioInputStream:
         :param status: unused
         """
         if self.from_file:
-            # in_arr = self.wf.readframes(self.chunk * 4)
-            # in_arr = np.frombuffer(in_arr, dtype=np.float32)
             in_arr = self.wave[self.count * self.chunk : (self.count + 1) * self.chunk]
-            # in_arr = np.frombuffer(in_data, dtype=np.float32)
             self.count += 1
 
             if self.count >= self.max_count:
                 exit(0)
-            # print("frame read")
         else:
             in_arr = np.frombuffer(in_data, dtype=np.float32)
 
-        cond = in_arr.flatten().max()
-        # if cond > 1e-3:
-        print(cond)
-        print(in_arr.shape)
-
         self.rb.update(in_arr)
-        return (in_arr, pyaudio.paContinue)
+
+        return in_arr, pyaudio.paContinue

@@ -18,12 +18,7 @@ import argparse
 from dataclasses import dataclass
 from typing import Optional
 from pathlib import Path
-
-#
 import torch
-from omegaconf import OmegaConf
-
-#
 from sed_demo import (
     AI4S_BANNER_PATH,
     SURREY_LOGO_PATH,
@@ -39,9 +34,7 @@ from sed_demo.gui import DemoFrontend
 
 FILE = Path(__file__).resolve()
 
-# ##############################################################################
-# # SED DEMO APP CLASS
-# ##############################################################################
+
 class DemoApp(DemoFrontend):
     """
     This class extends the Tk ``DemoFrontend`` with the specific functionality
@@ -120,7 +113,11 @@ class DemoApp(DemoFrontend):
         )
         # 1. Input stream from microphone
         self.audiostream = AsynchAudioInputStream(
-            samplerate, audio_chunk_length, ringbuffer_length, from_file, file_name,
+            samplerate,
+            audio_chunk_length,
+            ringbuffer_length,
+            from_file,
+            file_name,
         )
         # 2. DL pretrained model to predict tags from ring buffer
         num_audioset_classes = len(all_labels)
@@ -204,28 +201,27 @@ class DemoApp(DemoFrontend):
             self.destroy()
 
 
-
-
-
 def parse_opt():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--sr", type=int, default=32000, help="sampling rate of source"
-    )
+    parser.add_argument("--sr", type=int, default=32000, help="sampling rate of source")
     parser.add_argument(
         "--chunk", type=int, default=1024, help="sampling rate of source"
     )
     parser.add_argument(
         "--windows", type=int, default=1024, help="sampling rate of source"
     )
-    parser.add_argument(
-        "--topk", type=int, default=6, help="sampling rate of source"
-    )
+    parser.add_argument("--topk", type=int, default=6, help="sampling rate of source")
     parser.add_argument(
         "--from-file", action="store_true", help="compile model (GPU ONLY)"
     )
-    parser.add_argument("--name", default="sample.wav", help="save results to project/name")
-    parser.add_argument("--pth", default="Cnn9_GMP_64x64_300000_iterations_mAP=0.37.pth", help="save results to project/name")
+    parser.add_argument(
+        "--name", default="sample.wav", help="save results to project/name"
+    )
+    parser.add_argument(
+        "--pth",
+        default="Cnn9_GMP_64x64_300000_iterations_mAP=0.37.pth",
+        help="save results to project/name",
+    )
 
     opt = parser.parse_args()
     print_args(FILE.stem, opt)
@@ -233,9 +229,6 @@ def parse_opt():
     return opt
 
 
-# ##############################################################################
-# # OMEGACONF
-# ##############################################################################
 @dataclass
 class ConfDef:
     """
@@ -244,52 +237,37 @@ class ConfDef:
     """
 
     def __init__(self, opt):
+        self.ROOT = str(FILE.parents[1])
         self.SAMPLERATE = opt.sr
         self.AUDIO_CHUNK_LENGTH = opt.chunk
         self.MODEL_WINSIZE = opt.windows
         self.RINGBUFFER_LENGTH: int = int(self.SAMPLERATE * 2)
         self.TOP_K = opt.topk
         self.from_file = opt.from_file
-        self.file_name = opt.name
+        self.file_path = os.path.join(self.ROOT, "sed_demo", opt.name)  # absolute path
         self.pth = opt.pth
         self.MODEL_PATH: str = os.path.join(
-            "models", self.pth
-        )
+            self.ROOT, "sed_demo", "models", self.pth
+        )  # absolute path
 
     ALL_LABELS_PATH: str = AUDIOSET_LABELS_PATH
     SUBSET_LABELS_PATH: Optional[str] = None
-    #
-    # SAMPLERATE: int = 32000
-    # AUDIO_CHUNK_LENGTH: int = 1024
-    #
-    # MODEL_WINSIZE: int = 1024
-    # RINGBUFFER_LENGTH: int = int(SAMPLERATE * 2)
     STFT_HOPSIZE: int = 512
     STFT_WINDOW: str = "hann"
     N_MELS: int = 64
     MEL_FMIN: int = 50
     MEL_FMAX: int = 14000
+
     # frontend
-    # TOP_K: int = 6
     TITLE_FONTSIZE: int = 28
     TABLE_FONTSIZE: int = 22
-    # from_file: bool = True
-    # from_file: bool = False
-    # file_name: str = "news.wav"
-    # file_name: str = "sample.wav"
 
 
-# ##############################################################################
-# ##############################################################################
-# # MAIN ROUTINE
-# ##############################################################################
 if __name__ == "__main__":
     print("\n\nCONFIGURATION:")
+    # print(ROOT)
     opt = parse_opt()
     CONF = ConfDef(opt)
-    # cli_conf = OmegaConf.from_cli()
-    # CONF = OmegaConf.merge(CONF, cli_conf)
-    # print(OmegaConf.to_yaml(CONF), end="\n\n\n")
 
     _, _, all_labels = load_csv_labels(CONF.ALL_LABELS_PATH)
     if CONF.SUBSET_LABELS_PATH is None:
@@ -317,7 +295,8 @@ if __name__ == "__main__":
         CONF.TITLE_FONTSIZE,
         CONF.TABLE_FONTSIZE,
         CONF.from_file,
-        CONF.file_name,
+        CONF.file_path,
+        # str(ROOT).replace("\\", "/") + "/sed_demo/" + CONF.file_name
     )
 
     demo.mainloop()
