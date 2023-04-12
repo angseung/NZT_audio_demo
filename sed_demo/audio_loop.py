@@ -9,6 +9,7 @@ This module contains functionality to handle the real-time input audio process.
 import wave
 import numpy as np
 import pyaudio
+import librosa
 
 
 # ##############################################################################
@@ -79,6 +80,9 @@ class AsynchAudioInputStream:
 
         if from_file:
             self.wf = wave.open(self.wav_path, "rb")
+            self.wave, _ = librosa.load(self.wav_path, sr=self.wf.getframerate(), mono=True, dtype=np.float32)
+            self.max_count = self.wave.shape[0] // chunk_length
+            self.count = 0
             self.stream = self.pa.open(
                 format=self.pa.get_format_from_width(self.wf.getsampwidth()),
                 channels=self.wf.getnchannels(),
@@ -100,7 +104,8 @@ class AsynchAudioInputStream:
                 output=False,  # playback
                 frames_per_buffer=chunk_length,
                 stream_callback=self.callback,
-                input_device_index=2,
+                input_device_index=1,  # for Webcam MIC
+                # input_device_index=2,  # for USB MIC
                 start=False,
             )
 
@@ -153,11 +158,22 @@ class AsynchAudioInputStream:
         :param status: unused
         """
         if self.from_file:
-            in_arr = self.wf.readframes(self.chunk)
-            in_arr = np.frombuffer(in_arr, dtype=np.float32)
+            # in_arr = self.wf.readframes(self.chunk * 4)
+            # in_arr = np.frombuffer(in_arr, dtype=np.float32)
+            in_arr = self.wave[self.count * self.chunk : (self.count + 1) * self.chunk]
+            # in_arr = np.frombuffer(in_data, dtype=np.float32)
+            self.count += 1
+
+            if self.count >= self.max_count:
+                exit(0)
             # print("frame read")
         else:
             in_arr = np.frombuffer(in_data, dtype=np.float32)
+
+        cond = in_arr.flatten().max()
+        # if cond > 1e-3:
+        print(cond)
+        print(in_arr.shape)
 
         self.rb.update(in_arr)
         return (in_arr, pyaudio.paContinue)
